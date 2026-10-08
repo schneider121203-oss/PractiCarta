@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}Revisar importación · PractiCarta{% endblock %}
+{% block content %}
+<section class="review-shell">
+  <a class="back-link" href="{% url 'menu_imports:upload' %}">← Volver a importaciones</a>
+  <div class="review-head"><div><p class="eyebrow">BORRADOR GENERADO</p><h1>Revisa antes de importar</h1><p>Corrige nombres y precios. Desmarca cualquier producto que no quieras agregar.</p></div><span class="source-file">{{ job.original_name }}</span></div>
+  {% if job.status == 'imported' %}<div class="already-imported">✓ Este borrador ya fue importado.</div>{% endif %}
+  <form method="post" class="review-form">{% csrf_token %}
+    {% for category in draft.categories %}<section class="review-category"><div class="review-category-head"><label>Categoría</label><input name="category_{{ forloop.counter0 }}_name" value="{{ category.name }}" maxlength="100" required></div>
+      <div class="review-products">{% for product in category.products %}<article><label class="include-product"><input type="checkbox" name="product_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}_include" checked><span>Importar</span></label><div class="review-fields"><label>Producto<input name="product_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}_name" value="{{ product.name }}" maxlength="120" required></label><label>Descripción<textarea name="product_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}_description" rows="2">{{ product.description }}</textarea></label><label class="price-field">Precio (S/)<input type="number" name="product_{{ forloop.parentloop.counter0 }}_{{ forloop.counter0 }}_price" value="{{ product.price }}" min="0" step="0.01" required></label></div></article>{% endfor %}</div>
+    </section>{% endfor %}
+    {% if job.status != 'imported' %}<div class="review-actions"><span>Los productos se crearán como visibles y disponibles.</span><button>Confirmar e importar</button></div>{% endif %}
+  </form>
+</section>
+{% endblock %}

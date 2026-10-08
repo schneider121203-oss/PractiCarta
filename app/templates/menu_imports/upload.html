@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}Importar carta · PractiCarta{% endblock %}
+{% block content %}
+<section class="editor-shell import-shell">
+  <a class="back-link" href="{% url 'businesses:dashboard' %}">← Volver al panel</a>
+  <div class="import-hero"><span>✦</span><div><p class="eyebrow">IMPORTACIÓN ASISTIDA</p><h1>Convierte tu carta en productos</h1><p>Sube un PDF o una fotografía. Prepararemos un borrador para que lo revises antes de publicar.</p></div></div>
+  <div class="editor-grid">
+    <div class="editor-main"><form method="post" enctype="multipart/form-data" class="styled-form upload-form">{% csrf_token %}{{ form.as_p }}<button>Analizar mi carta</button></form><div class="privacy-note"><b>Siempre tendrás el control.</b> Ningún producto se publica sin tu confirmación.</div></div>
+    <aside class="editor-aside"><div class="tip-card"><span>📷</span><h3>Para obtener mejores resultados</h3><p>Usa un documento derecho, nítido, con buena iluminación y precios visibles. Evita reflejos o fotografías cortadas.</p></div></aside>
+  </div>
+  {% if history %}<section class="import-history"><h2>Importaciones recientes</h2>{% for item in history %}<div><span><strong>{{ item.original_name }}</strong><small>{{ item.created_at|date:"d/m/Y H:i" }}</small></span><span class="import-status {{ item.status }}">{{ item.get_status_display }}</span>{% if item.status == 'ready' or item.status == 'imported' %}<a href="{% url 'menu_imports:review' item.id %}">Ver</a>{% elif item.status == 'failed' %}<form method="post" action="{% url 'menu_imports:retry' item.id %}">{% csrf_token %}<button class="link">Reintentar</button></form>{% endif %}</div>{% endfor %}</section>{% endif %}
+</section>
+{% endblock %}

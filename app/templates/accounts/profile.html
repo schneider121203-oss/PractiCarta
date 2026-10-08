@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Mi cuenta · PractiCarta{% endblock %}
+{% block content %}
+<section class="editor-shell">
+  <a class="back-link" href="{% url 'businesses:dashboard' %}">← Volver al panel</a>
+  <div class="editor-grid">
+    <div class="editor-main">
+      <p class="eyebrow">MI CUENTA</p>
+      <h1>Datos personales</h1>
+      <p class="lead">Actualiza el nombre y correo con el que administras tu carta.</p>
+      <form method="post" class="styled-form profile-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        <div class="profile-fields">
+          <p>{{ form.first_name.label_tag }}{{ form.first_name }}{{ form.first_name.errors }}</p>
+          <p>{{ form.last_name.label_tag }}{{ form.last_name }}{{ form.last_name.errors }}</p>
+        </div>
+        <p>{{ form.email.label_tag }}{{ form.email }}{{ form.email.errors }}</p>
+        <div class="appearance-setting">
+          <span class="appearance-icon" aria-hidden="true">◐</span>
+          <div class="appearance-copy">
+            {{ form.theme_preference.label_tag }}
+            <small>{{ form.theme_preference.help_text }}</small>
+          </div>
+          {{ form.theme_preference }}
+          {{ form.theme_preference.errors }}
+        </div>
+        <div class="form-actions"><button>Guardar cambios</button></div>
+      </form>
+    </div>
+    <aside class="editor-aside">
+      <div class="tip-card security-card">
+        <span class="tip-icon">🔒</span>
+        <h3>Seguridad</h3>
+        <p>Cambia tu contraseña periódicamente y evita compartir tu acceso.</p>
+        <a class="button secondary account-action" href="{% url 'password_change' %}">Cambiar contraseña</a>
+      </div>
+    </aside>
+  </div>
+</section>
+{% endblock %}

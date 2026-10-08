@@ -1,0 +1,29 @@
+{% extends 'base.html' %}{% load static %}
+{% block title %}{{ title }} · PractiCarta{% endblock %}
+{% block content %}
+<section class="editor-shell">
+  {% if business %}<a class="back-link" href="{% url 'businesses:dashboard' %}">← Volver al panel</a>{% endif %}
+  <div class="editor-grid business-editor">
+    <div class="editor-main"><p class="eyebrow">IDENTIDAD DEL NEGOCIO</p><h1>{{ title }}</h1><p class="lead">{{ subtitle }}</p><form method="post" enctype="multipart/form-data" class="styled-form business-settings-form">{% csrf_token %}{{ form.non_field_errors }}
+      <section class="settings-section"><div class="settings-section-head"><span>1</span><div><h2>Información pública</h2><p>Lo primero que verán tus clientes.</p></div></div>
+        <p>{{ form.name.label_tag }}{{ form.name }}{{ form.name.errors }}</p><p>{{ form.slug.label_tag }}{{ form.slug }}{% if form.slug.help_text %}<span class="helptext">{{ form.slug.help_text }}</span>{% endif %}{{ form.slug.errors }}</p><div class="menu-link-preview" data-menu-link-preview hidden><span>Así quedará tu enlace</span><strong></strong><small data-link-warning hidden>Si cambias este enlace, los QR anteriores dejarán de funcionar.</small></div><p>{{ form.description.label_tag }}{{ form.description }}{{ form.description.errors }}</p><p>{{ form.greeting_message.label_tag }}{{ form.greeting_message }}<span class="helptext">{{ form.greeting_message.help_text }}</span>{{ form.greeting_message.errors }}</p><p>{{ form.whatsapp_number.label_tag }}{{ form.whatsapp_number }}<span class="helptext">{{ form.whatsapp_number.help_text }}</span>{{ form.whatsapp_number.errors }}</p>
+      </section>
+      <section class="settings-section"><div class="settings-section-head"><span>2</span><div><h2>Marca y colores</h2><p>Aplicamos contraste automático para mantener la carta legible.</p></div></div>
+        <div class="form-two-columns"><p>{{ form.brand_palette.label_tag }}{{ form.brand_palette }}{{ form.brand_palette.errors }}</p><p>{{ form.menu_theme.label_tag }}{{ form.menu_theme }}<span class="helptext">{{ form.menu_theme.help_text }}</span>{{ form.menu_theme.errors }}</p></div><div class="form-two-columns"><p>{{ form.primary_color.label_tag }}{{ form.primary_color }}{{ form.primary_color.errors }}</p><p>{{ form.secondary_color.label_tag }}{{ form.secondary_color }}{{ form.secondary_color.errors }}</p></div><div class="form-two-columns"><p>{{ form.logo.label_tag }}{{ form.logo }}{{ form.logo.errors }}</p><p>{{ form.cover_image.label_tag }}{{ form.cover_image }}{{ form.cover_image.errors }}</p></div>
+      </section>
+      <section class="settings-section"><div class="settings-section-head"><span>3</span><div><h2>Atención y pedidos</h2><p>Elige cómo pueden pedirte.</p></div></div><div class="check-grid"><label>{{ form.pickup_enabled }} Recojo en local</label><label>{{ form.delivery_enabled }} Delivery</label><label>{{ form.dine_in_enabled }} Consumo en local</label></div><p class="settings-address">{{ form.address.label_tag }}{{ form.address }}<span class="helptext">{{ form.address.help_text }}</span>{{ form.address.errors }}</p>
+        <div class="business-location-picker">
+          <span class="location-picker-icon" aria-hidden="true">⌖</span>
+          <div><strong>Ubicación exacta del negocio</strong><small>Usaremos el GPS de este dispositivo para completar las coordenadas. Podrás revisarlas antes de guardar.</small></div>
+          <button id="capture-business-location" class="button secondary compact" type="button">Usar mi ubicación</button>
+          <button id="clear-business-location" class="button ghost compact" type="button">Quitar</button>
+          <p id="business-location-status" class="location-picker-status" aria-live="polite">{% if business.maps_url %}✓ Ubicación configurada{% else %}Todavía no has añadido una ubicación exacta.{% endif %}</p>
+        </div>
+        <details class="coordinate-fields"><summary>Revisar o ajustar coordenadas <small>Avanzado</small></summary><p>También puedes corregirlas manualmente si el GPS no es suficientemente preciso.</p><div class="form-two-columns"><p>{{ form.latitude.label_tag }}{{ form.latitude }}{{ form.latitude.errors }}</p><p>{{ form.longitude.label_tag }}{{ form.longitude }}{{ form.longitude.errors }}</p></div></details><label class="publish-control">{{ form.is_published }} <span><strong>Carta publicada</strong><small>Desactívala para ocultarla temporalmente.</small></span></label>
+      </section>
+      <div class="form-actions">{% if business %}<a class="button ghost" href="{% url 'businesses:dashboard' %}">Cancelar</a>{% endif %}<button>Guardar y continuar</button></div></form></div>
+    <aside class="editor-aside"><p class="eyebrow">TUS IMÁGENES</p><div class="brand-preview"><div class="cover-preview">{% if business.cover_image %}<img id="cover-preview" src="{{ business.cover_image.url }}" alt="">{% else %}<img id="cover-preview" alt="" hidden><span>Portada</span>{% endif %}</div><div class="logo-preview">{% if business.logo %}<img id="logo-preview" src="{{ business.logo.url }}" alt="">{% else %}<img id="logo-preview" alt="" hidden><span>Logo</span>{% endif %}</div><div><strong>{% if business %}{{ business.name }}{% else %}Tu negocio{% endif %}</strong><small>Previsualización de marca</small></div></div><div class="tip-card"><span>✦</span><h3>Imágenes que abren el apetito</h3><p>Usa fotos nítidas, con buena luz y sin texto superpuesto.</p></div></aside>
+  </div>
+</section>
+{% endblock %}
+{% block scripts %}<script src="{% static 'js/image-preview.js' %}"></script><script src="{% static 'js/business-form.js' %}?v=20261008-location"></script>{% endblock %}

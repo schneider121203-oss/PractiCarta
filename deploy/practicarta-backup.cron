@@ -1,0 +1,2 @@
+CRON_TZ=America/Lima
+15 3 * * * ubuntu /opt/practicarta/deploy/backup.sh >> /var/log/practicarta-backup.log 2>&1

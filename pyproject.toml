@@ -1,0 +1,26 @@
+[project]
+name = "practicarta"
+version = "0.1.0"
+description = "Carta digital y pedidos por WhatsApp para restaurantes"
+requires-python = ">=3.12"
+dependencies = [
+  "Django>=5.2,<5.3",
+  "Pillow>=10.0",
+  "psycopg[binary]>=3.2",
+  "qrcode[pil]>=8.0",
+  "gunicorn>=23.0",
+  "google-genai>=1.0",
+  "boto3>=1.35",
+  "python-dotenv>=1.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["app*", "config*"]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py", "*_tests.py"]

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}Panel · {{ business.name }}{% endblock %}
+{% block content %}
+<section class="dashboard">
+  <div class="dash-head">
+    <div class="business-title">
+      {% if business.logo %}<img src="{{ business.logo.url }}" alt="">{% else %}<span class="business-avatar">{{ business.name|first|upper }}</span>{% endif %}
+      <div><p class="eyebrow">PANEL DEL NEGOCIO</p><h1>{{ business.name }}</h1><span class="publish-state {% if business.is_published %}online{% endif %}"><i></i>{% if business.is_published %}Carta publicada{% else %}Carta oculta{% endif %}</span></div>
+    </div>
+    <div class="actions"><a class="button secondary" href="{% url 'businesses:edit' %}">Personalizar</a><a class="button" target="_blank" href="{{ business.get_absolute_url }}">Ver carta <span>↗</span></a></div>
+  </div>
+  {% if not setup.category or not setup.product or not setup.brand %}
+  <section class="setup-card">
+    <div><p class="eyebrow">PRIMEROS PASOS</p><h2>Deja tu carta lista para compartir</h2></div>
+    <div class="setup-steps">
+      <a class="setup-step {% if setup.brand %}done{% endif %}" href="{% url 'businesses:edit' %}"><i>{% if setup.brand %}✓{% else %}1{% endif %}</i><span><strong>Personaliza tu marca</strong><small>Añade logo, portada y color</small></span></a>
+      <a class="setup-step {% if setup.category %}done{% endif %}" href="{% url 'businesses:category_add' %}"><i>{% if setup.category %}✓{% else %}2{% endif %}</i><span><strong>Crea una categoría</strong><small>Organiza platos, bebidas y más</small></span></a>
+      <a class="setup-step {% if setup.product %}done{% endif %}" href="{% url 'businesses:product_add' %}"><i>{% if setup.product %}✓{% else %}3{% endif %}</i><span><strong>Agrega un producto</strong><small>Nombre, precio y fotografía</small></span></a>
+    </div>
+  </section>{% endif %}
+  <div class="metrics-heading"><span>Actividad de los últimos 30 días</span><small>{{ metrics.views_7 }} visitas y {{ metrics.whatsapp_7 }} pedidos iniciados esta semana</small></div>
+  <div class="metrics">
+    <article><span class="metric-icon eye">◉</span><div><strong>{{ metrics.views }}</strong><span>Visitas a la carta</span></div></article>
+    <article><span class="metric-icon bag">＋</span><div><strong>{{ metrics.adds }}</strong><span>Añadidos al pedido</span></div></article>
+    <article><span class="metric-icon wa">↗</span><div><strong>{{ metrics.whatsapp }}</strong><span>Pedidos iniciados</span></div></article>
+  </div>
+  <section class="panel-section">
+    <div class="section-head"><div><p class="eyebrow">ORGANIZACIÓN</p><h2>Categorías</h2></div><a class="button compact secondary" href="{% url 'businesses:category_add' %}">+ Nueva categoría</a></div>
+    {% if categories %}<div class="category-grid">{% for category in categories %}<a class="category-card" href="{% url 'businesses:category_edit' category.id %}"><span class="category-symbol">{{ category.name|first|upper }}</span><span><strong>{{ category.name }}</strong><small>{{ category.products.count }} producto{{ category.products.count|pluralize:"s" }} · {% if category.active %}Visible{% else %}Oculta{% endif %}</small></span><b>›</b></a>{% endfor %}</div>
+    {% else %}<div class="empty horizontal"><span class="empty-icon">▦</span><div><strong>Tu carta necesita una categoría</strong><p>Por ejemplo: Platos principales, Bebidas o Postres.</p></div><a class="button" href="{% url 'businesses:category_add' %}?next=product">Crear categoría</a></div>{% endif %}
+  </section>
+  <section class="panel-section">
+    <div class="section-head"><div><p class="eyebrow">TU CARTA</p><h2>Productos <span class="count">{{ products|length }}</span></h2></div><div class="section-actions"><a class="button compact secondary" href="{% url 'menu_imports:upload' %}">✦ Importar carta</a>{% if categories %}<a class="button compact" href="{% url 'businesses:product_add' %}">+ Nuevo producto</a>{% endif %}</div></div>
+    {% if products %}<div class="admin-products">{% for product in products %}<article>
+      {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}">{% else %}<span class="product-placeholder">◫</span>{% endif %}
+      <div class="grow"><strong>{{ product.name }}</strong><small>{{ product.category.name }} · <b>S/ {{ product.price }}</b></small></div>
+      <span class="status {% if product.available %}available{% endif %}"><i></i>{% if product.available %}Disponible{% else %}Agotado{% endif %}</span>
+      <a class="row-action" href="{% url 'businesses:product_edit' product.id %}">Editar</a>
+      <form method="post" action="{% url 'businesses:toggle_availability' product.id %}">{% csrf_token %}<button class="row-action link">{% if product.available %}Marcar agotado{% else %}Activar{% endif %}</button></form>
+    </article>{% endfor %}</div>
+    {% else %}<div class="empty"><span class="empty-icon">♨</span><h3>La vitrina está vacía</h3><p>{% if categories %}Agrega el primer producto de tu carta.{% else %}Crea una categoría y luego agrega tu primer producto.{% endif %}</p><a class="button" href="{% if categories %}{% url 'businesses:product_add' %}{% else %}{% url 'businesses:category_add' %}?next=product{% endif %}">{% if categories %}Agregar producto{% else %}Comenzar ahora{% endif %}</a></div>{% endif %}
+  </section>
+  <section class="share-card"><div><span class="share-icon">⌗</span><div><h3>Tu QR está listo</h3><p>Descárgalo, imprímelo y colócalo en mesas, vitrinas o empaques.</p></div></div><a class="button dark" href="{% url 'businesses:download_qr' %}">Descargar QR</a></section>
+</section>
+{% endblock %}

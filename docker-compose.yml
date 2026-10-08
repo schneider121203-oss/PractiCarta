@@ -1,0 +1,28 @@
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_DB: practicarta
+      POSTGRES_USER: practicarta
+      POSTGRES_PASSWORD: practicarta
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  web:
+    build: .
+    command: sh -c "python manage.py migrate && python manage.py runserver 0.0.0.0:8000"
+    ports: ["8000:8000"]
+    environment:
+      DATABASE_URL: postgresql://practicarta:practicarta@db:5432/practicarta
+      DEBUG: "True"
+      ALLOWED_HOSTS: localhost,127.0.0.1
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      GEMINI_MODEL: ${GEMINI_MODEL:-gemini-3.5-flash}
+      GEMINI_FALLBACK_MODEL: ${GEMINI_FALLBACK_MODEL:-gemini-3.1-flash-lite}
+      AWS_GEMINI_SECRET_ID: ${AWS_GEMINI_SECRET_ID:-}
+      AWS_SECRETS_REGION: ${AWS_SECRETS_REGION:-us-east-1}
+      AWS_SECRETS_PROFILE: ${AWS_SECRETS_PROFILE:-}
+      GEMINI_SECRET_JSON_KEY: ${GEMINI_SECRET_JSON_KEY:-}
+    volumes: [".:/app"]
+    depends_on: [db]
+volumes:
+  postgres_data:

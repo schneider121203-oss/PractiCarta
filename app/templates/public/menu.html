@@ -1,0 +1,68 @@
+{% load static l10n %}
+<!doctype html>
+<html lang="es" data-theme="{{ business.menu_theme }}">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="{% if business.menu_theme == 'dark' %}#090d1a{% else %}{{ business.primary_color }}{% endif %}">
+  <title>{{ business.name }} · Carta digital</title>
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20261008-location">
+</head>
+<body class="menu-page" style="--brand:{{ business.primary_color }};--brand-dark:{{ business.brand_dark_color }};--brand-soft:{{ business.brand_soft_color }};--brand-contrast:{{ business.brand_contrast_color }};--accent:{{ business.secondary_color }};--accent-contrast:{{ business.secondary_contrast_color }}">
+  <header class="menu-hero {% if not business.cover_image %}no-cover{% endif %}">
+    {% if business.cover_image %}<img class="hero-cover" src="{{ business.cover_image.url }}" alt="Portada de {{ business.name }}">{% endif %}
+    <div class="hero-shade"></div>
+    <div class="hero-content">
+      {% if business.logo %}<img class="logo" src="{{ business.logo.url }}" alt="Logo de {{ business.name }}">{% else %}<span class="logo logo-letter">{{ business.name|first|upper }}</span>{% endif %}
+      <div><span class="open-badge"><i></i>Carta disponible</span><h1>{{ business.name }}</h1>{% if business.description %}<p>{{ business.description }}</p>{% endif %}</div>
+    </div>
+  </header>
+  <main class="menu-content">
+    {% if business.greeting_message %}<section class="menu-greeting"><span>✦</span><p>{{ business.greeting_message }}</p></section>{% endif %}
+    {% if business.address %}<section class="restaurant-location"><div><small>ENCUÉNTRANOS EN</small><strong>{{ business.address }}</strong></div>{% if business.maps_url %}<a href="{{ business.maps_url }}" target="_blank" rel="noopener noreferrer">Ver ubicación ↗</a>{% endif %}</section>{% endif %}
+    {% if categories %}
+      <div class="menu-tools"><label class="search-box"><span>⌕</span><input id="menu-search" type="search" placeholder="Buscar en la carta..." autocomplete="off"></label></div>
+      <nav class="category-nav" aria-label="Categorías">{% for category in categories %}<a href="#category-{{ category.id }}">{{ category.name }}</a>{% endfor %}</nav>
+      <div id="no-results" class="empty menu-empty" hidden><span class="empty-icon">⌕</span><h3>No encontramos ese producto</h3><p>Prueba con otro nombre o revisa las categorías.</p></div>
+      {% for category in categories %}
+      <section id="category-{{ category.id }}" class="menu-category">
+        <div class="category-heading"><h2>{{ category.name }}</h2><span>{{ category.products.all|length }} opciones</span></div>
+        <div class="public-products">
+        {% for product in category.products.all %}
+          <article class="menu-product {% if not product.available %}sold-out{% endif %}" data-search="{{ product.name|lower }} {{ product.description|lower }}">
+            {% if product.image %}<img src="{{ product.image.url }}" alt="{{ product.name }}" loading="lazy">{% else %}<span class="menu-product-placeholder">♨</span>{% endif %}
+            <div class="product-info"><h3>{{ product.name }}</h3>{% if product.description %}<p>{{ product.description }}</p>{% endif %}<strong>S/ {{ product.price }}</strong>{% if not product.available %}<span class="unavailable">Agotado por ahora</span>{% endif %}</div>
+            {% if product.available %}<button class="add" aria-label="Añadir {{ product.name }}" data-id="{{ product.id }}" data-name="{{ product.name }}" data-price="{{ product.price|unlocalize }}"><span>＋</span><b>Añadir</b></button>{% endif %}
+          </article>
+        {% empty %}<p class="category-empty">Pronto habrá productos en esta categoría.</p>{% endfor %}
+        </div>
+      </section>
+      {% endfor %}
+    {% else %}<div class="empty menu-empty"><span class="empty-icon">♨</span><h2>Estamos preparando la carta</h2><p>Vuelve pronto para descubrir nuestros productos.</p></div>{% endif %}
+    {% if business.address or business.maps_url %}
+    <section class="menu-locations" aria-labelledby="locations-title">
+      <div class="location-section-head"><div><small>UBICACIONES</small><h2 id="locations-title">Encuentra el camino más fácil</h2></div><span aria-hidden="true">⌖</span></div>
+      <div class="location-grid">
+        <article class="location-card business-location-card"><span class="location-card-icon" aria-hidden="true">⌂</span><div><small>EL NEGOCIO</small><strong>{{ business.address|default:"Ubicación exacta del negocio" }}</strong>{% if business.maps_url %}<a href="{{ business.maps_url }}" target="_blank" rel="noopener noreferrer">Abrir en Google Maps ↗</a>{% endif %}</div></article>
+        <article class="location-card customer-location-card"><span class="location-card-icon" aria-hidden="true">◎</span><div><small>TU UBICACIÓN</small><strong id="customer-location-title">Compártela solo si quieres</strong><p id="customer-location-copy">Puede agilizar el delivery y calcular una distancia aproximada.</p><div class="customer-location-actions"><button id="find-my-location" type="button" class="button secondary compact">Usar mi ubicación</button><a id="customer-map-link" class="button ghost compact" href="#" target="_blank" rel="noopener noreferrer" hidden>Ver en Maps ↗</a><button id="clear-my-location" type="button" class="link" hidden>Quitar ubicación</button></div></div></article>
+      </div>
+      <p class="location-privacy">🔒 Tu ubicación no se guarda. Solo se añade al mensaje de WhatsApp si decides compartirla.</p>
+    </section>
+    {% endif %}
+    <footer class="menu-footer"><span>Hecho con</span><b>practi<span>carta</span></b></footer>
+  </main>
+
+  <div id="cart-overlay" class="cart-overlay" hidden></div>
+  <aside id="cart" class="cart" hidden aria-label="Tu pedido">
+    <div class="cart-handle"></div><div class="cart-header"><div><small>RESUMEN</small><h2>Tu pedido</h2></div><button id="close-cart" class="icon-button" aria-label="Cerrar">×</button></div>
+    <div id="cart-items"></div><fieldset class="order-types"><legend>¿Cómo quieres recibirlo?</legend>{% if business.pickup_enabled %}<label><input type="radio" name="order_type" value="pickup" checked><span>🛍️ Recojo</span></label>{% endif %}{% if business.delivery_enabled %}<label><input type="radio" name="order_type" value="delivery" {% if not business.pickup_enabled %}checked{% endif %}><span>🛵 Delivery</span></label>{% endif %}{% if business.dine_in_enabled %}<label><input type="radio" name="order_type" value="dine_in" {% if not business.pickup_enabled and not business.delivery_enabled %}checked{% endif %}><span>🍽️ En local</span></label>{% endif %}</fieldset>
+    <section id="delivery-details" class="delivery-details" hidden><label for="delivery-address">Dirección o referencia</label><input id="delivery-address" maxlength="300" placeholder="Ej.: Calle Los Pinos 123, puerta negra"><div class="location-action"><button id="use-location" type="button" class="button secondary">⌖ Compartir mi ubicación</button><small id="location-status" aria-live="polite">Opcional si escribes una dirección. No la guardaremos.</small></div></section>
+    <label class="order-note" for="customer-note"><span>Indicaciones adicionales <small>Opcional</small></span><textarea id="customer-note" maxlength="400" rows="2" placeholder="Ej.: Sin cebolla, tocar el timbre…"></textarea><small><b id="note-count">0</b>/400</small></label>
+    <div class="cart-total"><span>Total estimado<small>El restaurante confirmará tu pedido</small></span><strong id="cart-total">S/ 0.00</strong></div>
+    <button id="whatsapp" class="button checkout"><span>Continuar por WhatsApp</span><b>→</b></button>
+  </aside>
+  <button id="cart-trigger" class="cart-trigger" hidden><span class="cart-bubble" id="cart-count">0</span><b>Ver mi pedido</b><span id="trigger-total">S/ 0.00</span></button>
+  <div id="cart-toast" class="cart-toast" hidden>Producto añadido a tu pedido</div>
+  <div id="options-overlay" class="cart-overlay" hidden></div><aside id="options-panel" class="cart options-panel" hidden><div class="cart-handle"></div><div class="cart-header"><div><small>PERSONALIZA</small><h2 id="options-product-name">Producto</h2></div><button id="close-options" class="icon-button" aria-label="Cerrar">×</button></div><form id="options-form"><div id="options-groups"></div><div class="options-footer"><span>Total por unidad <strong id="configured-price">S/ 0.00</strong></span><button type="submit">Añadir al pedido</button></div></form></aside>
+  {{ option_catalog|json_script:"product-options" }}
+  <script>window.CARTA={slug:"{{ business.slug }}",csrf:"{{ csrf_token }}",businessLocation:{% if business.maps_url %}{latitude:{{ business.latitude|unlocalize }},longitude:{{ business.longitude|unlocalize }}}{% else %}null{% endif %}}</script><script src="{% static 'js/cart.js' %}?v=20261008-location"></script>
+</body>
+</html>
