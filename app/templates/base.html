@@ -4,12 +4,12 @@
 <head>
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#f05a28">
   <title>{% block title %}PractiCarta{% endblock %}</title>
-  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20261008-location">
+  <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20261008-home">
 </head>
 <body>
   <header class="topbar">
     <a href="{% if user.is_authenticated %}{% url 'businesses:dashboard' %}{% else %}{% url 'login' %}{% endif %}" class="brand"><i>p</i> practi<span>carta</span></a>
-    {% if user.is_authenticated %}<nav><a class="nav-link" href="{% url 'businesses:dashboard' %}">Mi carta</a>{% if user.is_staff %}<a class="nav-link" href="{% url 'businesses:operations_dashboard' %}">Operaciones</a>{% endif %}<a class="nav-link" href="{% url 'profile' %}">Mi cuenta</a><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link muted-link">Salir</button></form></nav>{% endif %}
+    {% if user.is_authenticated %}<nav><a class="nav-link" href="{% url 'businesses:dashboard' %}">Mi carta</a>{% if user.is_staff %}<a class="nav-link" href="{% url 'businesses:operations_dashboard' %}">Operaciones</a>{% endif %}<a class="nav-link" href="{% url 'profile' %}">Mi cuenta</a><form method="post" action="{% url 'logout' %}">{% csrf_token %}<button class="link muted-link">Salir</button></form></nav>{% else %}<nav class="guest-nav"><a class="nav-link" href="{% url 'login' %}">Ingresar</a><a class="button compact" href="{% url 'register' %}">Crear mi carta</a></nav>{% endif %}
   </header>
   <main>{% if messages %}<div class="messages">{% for message in messages %}<div class="message {{ message.tags }}">{{ message }}</div>{% endfor %}</div>{% endif %}{% block content %}{% endblock %}</main>
   {% block scripts %}{% endblock %}

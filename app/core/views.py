@@ -1,5 +1,12 @@
 from django.db import connection
 from django.http import JsonResponse
+from django.shortcuts import redirect, render
+
+
+def home(request):
+    if request.user.is_authenticated:
+        return redirect("businesses:dashboard")
+    return render(request, "public/home.html")
 
 def health(request):
     try:

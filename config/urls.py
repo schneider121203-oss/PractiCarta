@@ -2,9 +2,10 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
-from app.core.views import health
+from app.core.views import health, home
 
 urlpatterns = [
+    path("", home, name="home"),
     path("admin/", admin.site.urls),
     path("health/", health, name="health"),
     path("", include("app.accounts.urls")),

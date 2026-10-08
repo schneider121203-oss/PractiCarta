@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% block title %}PractiCarta · Tu carta digital que vende por WhatsApp{% endblock %}
+{% block content %}
+<section class="landing-hero">
+  <div class="landing-copy">
+    <p class="eyebrow">CARTAS DIGITALES PARA NEGOCIOS DE COMIDA</p>
+    <h1>Tu carta lista para vender desde un <span>QR.</span></h1>
+    <p class="landing-lead">Publica productos, precios y fotos. Tus clientes arman su pedido y lo reciben ordenado en tu WhatsApp.</p>
+    <div class="landing-actions"><a class="button" href="{% url 'register' %}">Crear mi carta gratis <span>→</span></a><a class="button ghost" href="#como-funciona">Ver cómo funciona</a></div>
+    <p class="landing-note">Sin comisiones por pedido · Sin instalar una app</p>
+  </div>
+  <div class="menu-demo" aria-label="Ejemplo de una carta digital">
+    <div class="demo-browser"><span></span><span></span><span></span><b>lacucharita.pe</b></div>
+    <div class="demo-cover"><span>La Cucharita</span><small>Carta disponible</small></div>
+    <div class="demo-content"><div class="demo-search">⌕ &nbsp; Buscar en la carta…</div><div class="demo-chips"><b>Fondos</b><b>Bebidas</b><b>Postres</b></div><h3>Lo más pedido</h3><article><i>🍗</i><span><strong>Pollo a la brasa</strong><small>Con papas y ensalada</small><b>S/ 29.90</b></span><em>＋</em></article><article><i>🥤</i><span><strong>Chicha morada</strong><small>Vaso helado</small><b>S/ 6.00</b></span><em>＋</em></article></div>
+    <div class="demo-cart"><b>1</b><span>Ver mi pedido</span><strong>S/ 29.90</strong></div>
+  </div>
+</section>
+
+<section id="como-funciona" class="landing-section steps-section">
+  <div class="landing-section-head"><p class="eyebrow">ASÍ DE SIMPLE</p><h2>De tu cocina al WhatsApp<br>en tres pasos.</h2></div>
+  <div class="landing-steps"><article><span>1</span><h3>Crea tu carta</h3><p>Agrega categorías, productos, precios, fotos y tu estilo de marca.</p></article><article><span>2</span><h3>Comparte tu QR</h3><p>Descárgalo para tus mesas, empaques, redes o vitrinas.</p></article><article><span>3</span><h3>Recibe pedidos claros</h3><p>El cliente elige cantidades, extras y envío. Tú lo recibes por WhatsApp.</p></article></div>
+</section>
+
+<section class="landing-section benefits-section"><div><p class="eyebrow">HECHA PARA EL DÍA A DÍA</p><h2>Menos mensajes confusos.<br>Más pedidos listos.</h2><p class="landing-lead">Actualiza un precio, marca un producto como agotado y sigue atendiendo. Todo desde un panel sencillo.</p><a class="text-arrow" href="{% url 'register' %}">Empieza a crear tu carta <span>→</span></a></div><div class="benefit-list"><article><span>◫</span><div><strong>Diseño que se adapta al celular</strong><small>Tu carta se ve bien desde el primer escaneo.</small></div></article><article><span>◌</span><div><strong>Ubicación voluntaria</strong><small>El cliente puede compartirla al pedir, sin que la guardemos.</small></div></article><article><span>↗</span><div><strong>Todo termina en WhatsApp</strong><small>Sin pagos integrados ni flujos complicados.</small></div></article></div></section>
+
+<section class="landing-cta"><p class="eyebrow">EMPIEZA HOY</p><h2>Tu negocio merece una carta que se mueva contigo.</h2><p>Configúrala en minutos y compártela cuando esté lista.</p><a class="button" href="{% url 'register' %}">Crear mi carta <span>→</span></a></section>
+{% endblock %}
