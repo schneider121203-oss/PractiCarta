@@ -1,3 +1,7 @@
+{$LEGACY_DOMAIN} {
+    redir https://{$DOMAIN}{uri} permanent
+}
+
 {$DOMAIN} {
     encode zstd gzip
 
