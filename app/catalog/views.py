@@ -1,6 +1,7 @@
 import json
 import re
 from decimal import Decimal, InvalidOperation
+from django.conf import settings
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
@@ -55,7 +56,12 @@ def menu(request, slug):
                 "options": [{"id": str(option.id), "name": option.name, "price": str(option.price_delta)} for option in group.options.all()],
             } for group in product.option_groups.all()]}
     AnalyticsEvent.objects.create(business=business, event_type="menu_view", session_id=request.session.session_key or "")
-    return render(request, "public/menu.html", {"business": business, "categories": categories, "option_catalog": option_catalog})
+    return render(request, "public/menu.html", {
+        "business": business,
+        "categories": categories,
+        "option_catalog": option_catalog,
+        "google_maps_embed_api_key": settings.GOOGLE_MAPS_EMBED_API_KEY,
+    })
 
 @require_POST
 def checkout(request, slug):
