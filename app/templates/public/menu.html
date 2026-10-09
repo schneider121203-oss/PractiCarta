@@ -5,7 +5,6 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="{% if business.menu_theme == 'dark' %}#090d1a{% else %}{{ business.primary_color }}{% endif %}">
   <title>{{ business.name }} · Carta digital</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20261008-home">
-  {% if business.maps_url %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endif %}
 </head>
 <body class="menu-page" style="--brand:{{ business.primary_color }};--brand-dark:{{ business.brand_dark_color }};--brand-soft:{{ business.brand_soft_color }};--brand-contrast:{{ business.brand_contrast_color }};--accent:{{ business.secondary_color }};--accent-contrast:{{ business.secondary_contrast_color }}">
   <header class="menu-hero {% if not business.cover_image %}no-cover{% endif %}">
