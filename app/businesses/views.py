@@ -3,6 +3,7 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.contrib.auth.decorators import login_required
 from django.conf import settings
 from django.db.models import Count, Max, Q
+from django.db.models.functions import TruncDate
 from django.db import transaction
 from django.http import Http404
 from django.http import HttpResponse
@@ -41,6 +42,75 @@ def dashboard(request):
             "whatsapp_7": events.filter(event_type="whatsapp_click", created_at__gte=last_7_days).count(),
         },
         "setup": {"brand": bool(business.logo or business.cover_image), "category": categories.exists(), "product": products.exists()},
+    })
+
+
+ANALYTICS_PERIODS = {"7": 7, "30": 30, "90": 90}
+
+
+def _unique_sessions(events, event_type):
+    return events.filter(event_type=event_type).exclude(session_id="").values("session_id").distinct().count()
+
+
+def _comparison(current, previous):
+    if not previous:
+        return "Nuevo" if current else "Sin cambios"
+    difference = round(((current - previous) / previous) * 100)
+    return f"{'+' if difference > 0 else ''}{difference}% vs. periodo anterior"
+
+
+@login_required
+def analytics(request):
+    business = owned_business(request)
+    period_key = request.GET.get("period", "30")
+    days = ANALYTICS_PERIODS.get(period_key, 30)
+    now = timezone.now()
+    start = now - timedelta(days=days - 1)
+    previous_start = start - timedelta(days=days)
+    current_events = business.events.filter(created_at__gte=start)
+    previous_events = business.events.filter(created_at__gte=previous_start, created_at__lt=start)
+    visitors = _unique_sessions(current_events, "menu_view")
+    cart_sessions = _unique_sessions(current_events, "add_to_cart")
+    whatsapp_sessions = _unique_sessions(current_events, "whatsapp_click")
+    previous_visitors = _unique_sessions(previous_events, "menu_view")
+    previous_whatsapp = _unique_sessions(previous_events, "whatsapp_click")
+    conversion = round((whatsapp_sessions / visitors) * 100, 1) if visitors else 0
+    previous_conversion = round((_unique_sessions(previous_events, "whatsapp_click") / previous_visitors) * 100, 1) if previous_visitors else 0
+
+    daily_rows = current_events.exclude(session_id="").annotate(day=TruncDate("created_at")).values("day").annotate(
+        visitors=Count("session_id", distinct=True, filter=Q(event_type="menu_view")),
+        whatsapp=Count("session_id", distinct=True, filter=Q(event_type="whatsapp_click")),
+    )
+    daily = {row["day"]: row for row in daily_rows}
+    trend = []
+    for offset in range(days):
+        day = (timezone.localdate() - timedelta(days=days - 1 - offset))
+        row = daily.get(day, {})
+        trend.append({"label": day.strftime("%d %b"), "visitors": row.get("visitors", 0), "whatsapp": row.get("whatsapp", 0)})
+    trend_max = max([point["visitors"] for point in trend] or [1])
+    for point in trend:
+        point["height"] = max(5, round((point["visitors"] / trend_max) * 100)) if trend_max else 5
+
+    top_products = list(current_events.filter(event_type="add_to_cart", product__isnull=False).values("product__name").annotate(adds=Count("id")).order_by("-adds", "product__name")[:5])
+    top_max = max([item["adds"] for item in top_products] or [1])
+    for item in top_products:
+        item["width"] = round((item["adds"] / top_max) * 100)
+
+    funnel = [
+        {"label": "Vieron la carta", "value": visitors, "width": 100},
+        {"label": "Añadieron algo al pedido", "value": cart_sessions, "width": round((cart_sessions / visitors) * 100) if visitors else 0},
+        {"label": "Iniciaron pedido por WhatsApp", "value": whatsapp_sessions, "width": round((whatsapp_sessions / visitors) * 100) if visitors else 0},
+    ]
+    return render(request, "businesses/analytics.html", {
+        "business": business, "period_key": period_key, "periods": ANALYTICS_PERIODS,
+        "metrics": [
+            {"icon": "◉", "tone": "eye", "value": visitors, "label": "Visitantes únicos", "detail": _comparison(visitors, previous_visitors)},
+            {"icon": "＋", "tone": "bag", "value": cart_sessions, "label": "Personas que añadieron productos", "detail": "Interés antes de iniciar el pedido"},
+            {"icon": "↗", "tone": "wa", "value": whatsapp_sessions, "label": "Pedidos iniciados por WhatsApp", "detail": _comparison(whatsapp_sessions, previous_whatsapp)},
+            {"icon": "%", "tone": "eye", "value": f"{conversion}%", "label": "Visitas que iniciaron un pedido", "detail": _comparison(conversion, previous_conversion)},
+        ],
+        "trend": trend, "funnel": funnel, "top_products": top_products,
+        "has_data": bool(visitors or cart_sessions or whatsapp_sessions),
     })
 
 

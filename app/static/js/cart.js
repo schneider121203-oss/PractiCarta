@@ -46,12 +46,12 @@
     $('#cart-items').innerHTML = cart.map(item => `<div class="cart-item"><span><strong>${escapeHtml(item.name)}</strong>${item.optionNames.length ? `<em>${item.optionNames.map(escapeHtml).join(' · ')}</em>` : ''}<small>${money(item.price)} c/u</small></span><div class="quantity"><button data-change="${item.lineId}" data-delta="-1" aria-label="Quitar uno">−</button><b>${item.quantity}</b><button data-change="${item.lineId}" data-delta="1" aria-label="Añadir uno">+</button></div></div>`).join('') || '<div class="cart-empty"><span>♨</span><p>Tu pedido todavía está vacío.</p></div>';
   }
   function showToast() { const toast=$('#cart-toast'); toast.hidden=false; clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>{toast.hidden=true;},1800); }
-  function recordAdd() { fetch(`/m/${carta.slug}/event/`,{method:'POST',headers:headers(),body:JSON.stringify({event_type:'add_to_cart'})}).catch(()=>{}); }
+  function recordAdd(productId) { fetch(`/m/${carta.slug}/event/`,{method:'POST',headers:headers(),body:JSON.stringify({event_type:'add_to_cart',product_id:productId})}).catch(()=>{}); }
   function addLine(button, selected=[]) {
     const id=button.dataset.id; const optionIds=selected.map(option=>option.id).sort(); const lineId=`${id}:${optionIds.join(',')}`; const existing=cart.find(item=>item.lineId===lineId);
     const price=Number(button.dataset.price)+selected.reduce((sum,option)=>sum+Number(option.price),0);
     if (existing) existing.quantity+=1; else cart.push({lineId,id,name:button.dataset.name,price,quantity:1,options:optionIds,optionNames:selected.map(option=>`${option.groupName}: ${option.name}`)});
-    save(); showToast(); recordAdd();
+    save(); showToast(); recordAdd(id);
   }
 
   function closeOptions() { $('#options-panel').hidden=true; $('#options-overlay').hidden=true; configuring=null; document.body.classList.remove('cart-open'); }

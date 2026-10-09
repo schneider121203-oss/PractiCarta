@@ -41,6 +41,13 @@ def clean_checkout_text(value, max_length):
     return cleaned
 
 
+def analytics_session_id(request):
+    """Create one anonymous, first-party identifier for reliable aggregate metrics."""
+    if not request.session.session_key:
+        request.session.create()
+    return request.session.session_key
+
+
 def clean_customer_location(value):
     if value in (None, ""):
         return None
@@ -71,7 +78,7 @@ def menu(request, slug):
                 "id": str(group.id), "name": group.name, "type": group.selection_type, "required": group.required,
                 "options": [{"id": str(option.id), "name": option.name, "price": str(option.price_delta)} for option in group.options.all()],
             } for group in product.option_groups.all()]}
-    AnalyticsEvent.objects.create(business=business, event_type="menu_view", session_id=request.session.session_key or "")
+    AnalyticsEvent.objects.create(business=business, event_type="menu_view", session_id=analytics_session_id(request))
     business_location = None
     if business.maps_url:
         business_location = {"latitude": float(business.latitude), "longitude": float(business.longitude)}
@@ -143,14 +150,15 @@ def checkout(request, slug):
     if customer_note:
         details.append(f"📝 Indicaciones: {customer_note}")
     text = "🛒 Pedido\n\n" + "\n\n".join(lines) + "\n\n" + "\n".join(details) + f"\n\n💰 Total: S/ {total:.2f}"
-    AnalyticsEvent.objects.create(business=business, event_type="whatsapp_click", session_id=request.session.session_key or "")
+    AnalyticsEvent.objects.create(business=business, event_type="whatsapp_click", session_id=analytics_session_id(request))
     return JsonResponse({"phone": "".join(filter(str.isdigit, business.whatsapp_number)), "text": text})
 
 @require_POST
 def event(request, slug):
     business = get_object_or_404(Business, slug=slug, is_published=True)
-    try: event_type = json.loads(request.body).get("event_type")
+    try: payload = json.loads(request.body); event_type = payload.get("event_type")
     except json.JSONDecodeError: return HttpResponseBadRequest()
     if event_type not in {"add_to_cart"}: return HttpResponseBadRequest()
-    AnalyticsEvent.objects.create(business=business, event_type=event_type, session_id=request.session.session_key or "")
+    product = get_object_or_404(Product, id=payload.get("product_id"), category__business=business, active=True)
+    AnalyticsEvent.objects.create(business=business, product=product, event_type=event_type, session_id=analytics_session_id(request))
     return JsonResponse({"ok": True})

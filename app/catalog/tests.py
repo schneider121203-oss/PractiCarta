@@ -24,6 +24,19 @@ class CatalogFlowTests(TestCase):
         self.assertContains(response, 'data-price="12.50"')
         self.assertNotContains(response, hidden.name)
         self.assertEqual(AnalyticsEvent.objects.filter(event_type="menu_view").count(), 1)
+        self.assertTrue(AnalyticsEvent.objects.get(event_type="menu_view").session_id)
+
+    def test_add_to_cart_event_tracks_the_product_and_visitor(self):
+        self.client.get(reverse("catalog:menu", args=[self.business.slug]))
+        response = self.client.post(
+            reverse("catalog:event", args=[self.business.slug]),
+            data=json.dumps({"event_type": "add_to_cart", "product_id": str(self.product.id)}),
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        event = AnalyticsEvent.objects.get(event_type="add_to_cart")
+        self.assertEqual(event.product, self.product)
+        self.assertTrue(event.session_id)
 
     def test_dashboard_renders_categories_products_and_setup(self):
         self.client.force_login(self.owner)
@@ -170,3 +183,13 @@ class CatalogFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, self.business.name)
         self.assertContains(response, "Clientes y cobros")
+
+    def test_owner_can_view_analytics_with_clear_whatsapp_conversion_copy(self):
+        AnalyticsEvent.objects.create(business=self.business, event_type="menu_view", session_id="visitor-one")
+        AnalyticsEvent.objects.create(business=self.business, product=self.product, event_type="add_to_cart", session_id="visitor-one")
+        AnalyticsEvent.objects.create(business=self.business, event_type="whatsapp_click", session_id="visitor-one")
+        self.client.force_login(self.owner)
+        response = self.client.get(reverse("businesses:analytics"))
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Visitas que iniciaron un pedido")
+        self.assertContains(response, self.product.name)

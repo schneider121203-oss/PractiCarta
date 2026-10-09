@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Analíticas · {{ business.name }}{% endblock %}
+{% block content %}
+<section class="dashboard analytics-page">
+  <div class="dash-head analytics-head"><div><p class="eyebrow">ANALÍTICAS DE TU CARTA</p><h1>Entiende qué mueve tus pedidos</h1><p class="lead">Datos anónimos de quienes visitan tu carta. Una visita cuenta una sola vez por persona.</p></div><a class="button secondary" target="_blank" href="{{ business.get_absolute_url }}">Ver carta ↗</a></div>
+  <nav class="period-tabs" aria-label="Periodo de analíticas">{% for key,label in periods.items %}<a href="?period={{ key }}" {% if period_key == key %}aria-current="page"{% endif %}>{{ label }} días</a>{% endfor %}</nav>
+  <div class="analytics-metrics">{% for metric in metrics %}<article><span class="metric-icon {{ metric.tone }}">{{ metric.icon }}</span><div><strong>{{ metric.value }}</strong><span>{{ metric.label }}</span><small>{{ metric.detail }}</small></div></article>{% endfor %}</div>
+  {% if has_data %}
+  <div class="analytics-grid">
+    <section class="panel-section trend-panel"><div class="section-head"><div><p class="eyebrow">TENDENCIA</p><h2>Visitas por día</h2></div><small>Las barras muestran visitantes únicos</small></div><div class="trend-chart" aria-label="Tendencia de visitantes">{% for point in trend %}<div class="trend-day" title="{{ point.label }}: {{ point.visitors }} visitantes"><span class="trend-value">{{ point.visitors }}</span><i style="height:{{ point.height }}%"></i><small>{{ point.label }}</small></div>{% endfor %}</div><p class="chart-note"><i></i> Las visitas se agrupan por día; los pedidos iniciados se ven en el embudo.</p></section>
+    <section class="panel-section funnel-panel"><div class="section-head"><div><p class="eyebrow">RECORRIDO</p><h2>De visita a pedido</h2></div></div><div class="funnel-list">{% for step in funnel %}<div class="funnel-row"><div><strong>{{ step.label }}</strong><span>{{ step.value }} persona{{ step.value|pluralize:"s" }}</span></div><div class="funnel-track"><i style="width:{{ step.width }}%"></i></div><b>{% if forloop.first %}100%{% else %}{{ step.width }}%{% endif %}</b></div>{% endfor %}</div><p class="chart-note">“Visitas que iniciaron un pedido” significa personas que abrieron WhatsApp desde tu carta, no ventas confirmadas.</p></section>
+  </div>
+  <section class="panel-section top-products"><div class="section-head"><div><p class="eyebrow">INTERÉS DEL CLIENTE</p><h2>Productos más añadidos</h2></div><small>Durante este periodo</small></div>{% if top_products %}<div class="product-ranking">{% for product in top_products %}<div><span class="rank-number">{{ forloop.counter }}</span><strong>{{ product.product__name }}</strong><div class="ranking-track"><i style="width:{{ product.width }}%"></i></div><b>{{ product.adds }}</b></div>{% endfor %}</div>{% else %}<div class="empty horizontal"><span class="empty-icon">＋</span><div><strong>Aún no hay productos añadidos</strong><p>Cuando alguien añada algo al pedido, aparecerá aquí.</p></div></div>{% endif %}</section>
+  {% else %}
+  <section class="panel-section analytics-empty"><span class="empty-icon">◉</span><h2>Todavía no hay actividad suficiente</h2><p>Comparte tu QR o enlace. Desde hoy registraremos visitantes únicos, interés por productos y pedidos iniciados.</p><a class="button" href="{% url 'businesses:download_qr' %}">Descargar mi QR</a></section>
+  {% endif %}
+</section>
+{% endblock %}
