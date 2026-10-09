@@ -84,15 +84,17 @@ class CatalogFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Ubicación compartida por el cliente: https://www.google.com/maps?q=-12.100000,-77.030000", response.json()["text"])
 
-    def test_public_menu_shows_openstreetmap_embed_with_coordinates(self):
+    def test_public_menu_shows_clean_openstreetmap_map_with_coordinates(self):
         self.business.address = "Av. Norte 123"
         self.business.latitude = "-12.119142"
         self.business.longitude = "-77.034904"
         self.business.save(update_fields=["address", "latitude", "longitude"])
         response = self.client.get(reverse("catalog:menu", args=[self.business.slug]))
         self.assertContains(response, "MAPA DEL LOCAL")
-        self.assertContains(response, "openstreetmap.org/export/embed.html")
-        self.assertContains(response, "marker=-12.119142%2C-77.034904")
+        self.assertContains(response, "unpkg.com/leaflet@1.9.4")
+        self.assertContains(response, 'data-latitude="-12.119142"')
+        self.assertContains(response, "colaboradores de OpenStreetMap")
+        self.assertNotContains(response, "Reportar un problema")
 
     def test_qr_download_is_png_for_public_menu(self):
         self.client.force_login(self.owner)
