@@ -1,6 +1,6 @@
 import json
 from django.contrib.auth import get_user_model
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from django.urls import reverse
 from app.analytics.models import AnalyticsEvent
 from app.businesses.models import Business
@@ -84,16 +84,15 @@ class CatalogFlowTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertIn("Ubicación compartida por el cliente: https://www.google.com/maps?q=-12.100000,-77.030000", response.json()["text"])
 
-    @override_settings(GOOGLE_MAPS_EMBED_API_KEY="test-public-browser-key")
-    def test_public_menu_shows_embed_map_only_with_configured_key_and_coordinates(self):
+    def test_public_menu_shows_openstreetmap_embed_with_coordinates(self):
         self.business.address = "Av. Norte 123"
         self.business.latitude = "-12.119142"
         self.business.longitude = "-77.034904"
         self.business.save(update_fields=["address", "latitude", "longitude"])
         response = self.client.get(reverse("catalog:menu", args=[self.business.slug]))
         self.assertContains(response, "MAPA DEL LOCAL")
-        self.assertContains(response, "maps/embed/v1/place?key=test-public-browser-key")
-        self.assertContains(response, "referrerpolicy=\"strict-origin-when-cross-origin\"")
+        self.assertContains(response, "openstreetmap.org/export/embed.html")
+        self.assertContains(response, "marker=-12.119142%2C-77.034904")
 
     def test_qr_download_is_png_for_public_menu(self):
         self.client.force_login(self.owner)

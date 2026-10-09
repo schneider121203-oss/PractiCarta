@@ -44,10 +44,10 @@
         <article class="location-card business-location-card"><span class="location-card-icon" aria-hidden="true">⌂</span><div><small>EL NEGOCIO</small><strong>{{ business.address|default:"Ubicación exacta del negocio" }}</strong>{% if business.maps_url %}<a href="{{ business.maps_url }}" target="_blank" rel="noopener noreferrer">Abrir en Google Maps ↗</a>{% endif %}</div></article>
         <article class="location-card customer-location-card"><span class="location-card-icon" aria-hidden="true">◎</span><div><small>TU UBICACIÓN</small><strong id="customer-location-title">Compártela solo si quieres</strong><p id="customer-location-copy">Puede agilizar el delivery y calcular una distancia aproximada.</p><div class="customer-location-actions"><button id="find-my-location" type="button" class="button secondary compact">Usar mi ubicación</button><a id="customer-map-link" class="button ghost compact" href="#" target="_blank" rel="noopener noreferrer" hidden>Ver en Maps ↗</a><button id="clear-my-location" type="button" class="link" hidden>Quitar ubicación</button></div></div></article>
       </div>
-      {% if google_maps_embed_api_key and business.maps_url %}
+      {% if openstreetmap_embed_url %}
       <div class="business-map-wrap">
         <div class="business-map-copy"><span aria-hidden="true">⌖</span><div><small>MAPA DEL LOCAL</small><strong>Cómo llegar a {{ business.name }}</strong></div><a href="{{ business.maps_url }}" target="_blank" rel="noopener noreferrer">Abrir en Maps ↗</a></div>
-        <iframe class="business-map" title="Mapa de {{ business.name }}" width="600" height="300" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" src="https://www.google.com/maps/embed/v1/place?key={{ google_maps_embed_api_key }}&q={{ business.latitude|unlocalize }},{{ business.longitude|unlocalize }}"></iframe>
+        <iframe class="business-map" title="Mapa de {{ business.name }}" width="600" height="300" loading="lazy" src="{{ openstreetmap_embed_url }}"></iframe>
       </div>
       {% endif %}
       <p class="location-privacy">🔒 Tu ubicación no se guarda. Solo se añade al mensaje de WhatsApp si decides compartirla.</p>

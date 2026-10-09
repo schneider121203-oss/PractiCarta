@@ -1,7 +1,6 @@
 import json
 import re
 from decimal import Decimal, InvalidOperation
-from django.conf import settings
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
@@ -12,6 +11,20 @@ from .models import Product, ProductOption, ProductOptionGroup
 
 MAX_NOTE_LENGTH = 400
 MAX_ADDRESS_LENGTH = 300
+
+
+def openstreetmap_embed_url(business):
+    """Small, coordinate-based map window; no API key or customer data involved."""
+    if business.latitude is None or business.longitude is None:
+        return ""
+    latitude, longitude = Decimal(business.latitude), Decimal(business.longitude)
+    lat_padding, lng_padding = Decimal("0.0045"), Decimal("0.0065")
+    south, north = max(Decimal("-90"), latitude - lat_padding), min(Decimal("90"), latitude + lat_padding)
+    west, east = max(Decimal("-180"), longitude - lng_padding), min(Decimal("180"), longitude + lng_padding)
+    return (
+        "https://www.openstreetmap.org/export/embed.html?"
+        f"bbox={west:.6f}%2C{south:.6f}%2C{east:.6f}%2C{north:.6f}&layer=mapnik&marker={latitude:.6f}%2C{longitude:.6f}"
+    )
 
 
 def clean_checkout_text(value, max_length):
@@ -60,7 +73,7 @@ def menu(request, slug):
         "business": business,
         "categories": categories,
         "option_catalog": option_catalog,
-        "google_maps_embed_api_key": settings.GOOGLE_MAPS_EMBED_API_KEY,
+        "openstreetmap_embed_url": openstreetmap_embed_url(business),
     })
 
 @require_POST

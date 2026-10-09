@@ -54,9 +54,6 @@ AWS_GEMINI_SECRET_ID = os.getenv("AWS_GEMINI_SECRET_ID", "")
 AWS_SECRETS_REGION = os.getenv("AWS_SECRETS_REGION", "us-east-1")
 AWS_SECRETS_PROFILE = os.getenv("AWS_SECRETS_PROFILE", "")
 GEMINI_SECRET_JSON_KEY = os.getenv("GEMINI_SECRET_JSON_KEY", "")
-# Public browser key used exclusively by the Maps Embed API. This is not a
-# server secret: restrict it by HTTP referrer and by API in Google Cloud.
-GOOGLE_MAPS_EMBED_API_KEY = os.getenv("GOOGLE_MAPS_EMBED_API_KEY", "")
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")

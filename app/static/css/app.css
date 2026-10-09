@@ -130,7 +130,7 @@ html[data-theme="dark"] .business-location-picker{background:#10172a;border-colo
 @media(prefers-color-scheme:dark){html[data-theme="system"] .business-location-picker{background:#10172a;border-color:#384665}html[data-theme="system"] .menu-locations{box-shadow:0 14px 36px rgba(0,0,0,.23)}html[data-theme="system"] .location-card{border-color:#303c5b}}
 @media(max-width:700px){.business-location-picker{grid-template-columns:auto 1fr}.business-location-picker .button{width:100%;grid-column:1/-1}.location-picker-status{grid-column:1/-1}.location-grid{grid-template-columns:1fr}.menu-locations{padding:16px}.customer-location-actions{align-items:stretch;flex-direction:column}.customer-location-actions>*{width:100%}}
 
-/* Embedded business map: appears only after the owner configures Maps Embed. */
+/* Embedded business map: coordinate-based, no API key required. */
 .business-map-wrap{margin-top:13px;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--menu-surface-soft)}.business-map-copy{display:flex;align-items:center;gap:10px;padding:11px 13px;background:var(--menu-surface)}.business-map-copy>span{display:grid;place-items:center;width:30px;height:30px;border-radius:9px;background:color-mix(in srgb,var(--brand) 13%,var(--menu-surface));color:var(--brand);font-size:17px}.business-map-copy>div{flex:1;min-width:0}.business-map-copy small,.business-map-copy strong{display:block}.business-map-copy small{color:var(--muted);font-size:8px;font-weight:850;letter-spacing:.11em}.business-map-copy strong{margin-top:2px;font-size:12px}.business-map-copy a{font-size:10px;font-weight:800;white-space:nowrap}.business-map{display:block;width:100%;height:245px;border:0;background:var(--menu-surface-soft)}
 
 /* Public landing page */
