@@ -68,7 +68,7 @@
   <button id="cart-trigger" class="cart-trigger" hidden><span class="cart-bubble" id="cart-count">0</span><b>Ver mi pedido</b><span id="trigger-total">S/ 0.00</span></button>
   <div id="cart-toast" class="cart-toast" hidden>Producto añadido a tu pedido</div>
   <div id="options-overlay" class="cart-overlay" hidden></div><aside id="options-panel" class="cart options-panel" hidden><div class="cart-handle"></div><div class="cart-header"><div><small>PERSONALIZA</small><h2 id="options-product-name">Producto</h2></div><button id="close-options" class="icon-button" aria-label="Cerrar">×</button></div><form id="options-form"><div id="options-groups"></div><div class="options-footer"><span>Total por unidad <strong id="configured-price">S/ 0.00</strong></span><button type="submit">Añadir al pedido</button></div></form></aside>
-  {{ option_catalog|json_script:"product-options" }}
-  <script>window.CARTA={slug:"{{ business.slug }}",csrf:"{{ csrf_token }}",businessLocation:{% if business.maps_url %}{latitude:{{ business.latitude|unlocalize }},longitude:{{ business.longitude|unlocalize }}}{% else %}null{% endif %}}</script><script src="{% static 'js/cart.js' %}?v=20261008-location"></script>
+  {{ option_catalog|json_script:"product-options" }}{{ menu_config|json_script:"menu-config" }}
+  <script src="{% static 'js/cart.js' %}?v=20261009-security"></script>
 </body>
 </html>

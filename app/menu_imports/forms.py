@@ -1,6 +1,7 @@
 from pathlib import Path
-from PIL import Image, UnidentifiedImageError
+from pypdf import PdfReader
 from django import forms
+from app.core.uploads import validate_image_file
 
 MAX_DOCUMENT_BYTES = 15 * 1024 * 1024
 
@@ -18,13 +19,27 @@ class MenuImportForm(forms.Form):
         extension = Path(source.name).suffix.lower()
         signature = source.read(8); source.seek(0)
         if extension == ".pdf" and signature.startswith(b"%PDF-"):
+            try:
+                reader = PdfReader(source, strict=False)
+                if reader.is_encrypted:
+                    raise forms.ValidationError("El PDF está protegido con contraseña. Sube una copia sin protección.")
+                if len(reader.pages) > 50:
+                    raise forms.ValidationError("El PDF no puede superar 50 páginas.")
+            except forms.ValidationError:
+                raise
+            except Exception:
+                raise forms.ValidationError("El PDF no es válido o está dañado.")
+            finally:
+                source.seek(0)
             source.validated_mime = "application/pdf"
             return source
         if extension not in {".jpg", ".jpeg", ".png", ".webp"}:
             raise forms.ValidationError("Usa un archivo PDF, JPEG, PNG o WebP.")
         try:
-            image = Image.open(source); image.verify(); source.seek(0)
-        except (UnidentifiedImageError, OSError):
-            raise forms.ValidationError("La imagen no es válida o está dañada.")
-        source.validated_mime = Image.open(source).get_format_mimetype(); source.seek(0)
+            validate_image_file(source, MAX_DOCUMENT_BYTES)
+            source.validated_mime = {".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png", ".webp": "image/webp"}[extension]
+        except forms.ValidationError:
+            raise
+        finally:
+            source.seek(0)
         return source

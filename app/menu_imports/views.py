@@ -2,18 +2,32 @@ from decimal import Decimal, InvalidOperation
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db import transaction
+from django.utils import timezone
 from django.http import Http404
 from django.shortcuts import get_object_or_404, redirect, render
 from django.views.decorators.http import require_POST
 from app.catalog.models import Category, Product
 from .forms import MenuImportForm
-from .models import MenuImport
+from .models import DailyImportUsage, MenuImport
 from .services import MenuImportError, extract_menu
 
 def current_business(request):
     business = request.user.businesses.order_by("created_at").first()
     if not business: raise Http404
     return business
+
+
+def consume_import_quota(business):
+    """Two Gemini analyses per business and Lima calendar day, including retries."""
+    with transaction.atomic():
+        usage, _ = DailyImportUsage.objects.select_for_update().get_or_create(
+            business=business, day=timezone.localdate(), defaults={"attempts": 0},
+        )
+        if usage.attempts >= 2:
+            return False
+        usage.attempts += 1
+        usage.save(update_fields=["attempts"])
+    return True
 
 def process_import(job):
     job.status = MenuImport.Status.PROCESSING
@@ -33,6 +47,9 @@ def upload(request):
     business = current_business(request)
     form = MenuImportForm(request.POST or None, request.FILES or None)
     if request.method == "POST" and form.is_valid():
+        if not consume_import_quota(business):
+            messages.error(request, "Ya usaste los 2 análisis de carta disponibles para hoy. Podrás intentarlo nuevamente mañana.")
+            return render(request, "menu_imports/upload.html", {"form": form, "history": business.menu_imports.only("id", "original_name", "status", "created_at")[:5]})
         source = form.cleaned_data["source_file"]
         job = MenuImport.objects.create(
             business=business, created_by=request.user, source_file=source,
@@ -53,6 +70,9 @@ def retry(request, import_id):
     job = get_object_or_404(MenuImport, id=import_id, business=current_business(request))
     if job.status != MenuImport.Status.FAILED:
         messages.info(request, "Esta importación no necesita reintentarse.")
+        return redirect("menu_imports:upload")
+    if not consume_import_quota(job.business):
+        messages.error(request, "Ya usaste los 2 análisis de carta disponibles para hoy. Podrás reintentarlo mañana.")
         return redirect("menu_imports:upload")
     error = process_import(job)
     if error:

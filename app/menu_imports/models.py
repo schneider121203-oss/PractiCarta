@@ -1,6 +1,7 @@
 import uuid
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 from app.businesses.models import Business
 
 class MenuImport(models.Model):
@@ -25,3 +26,12 @@ class MenuImport(models.Model):
 
     class Meta:
         ordering = ["-created_at"]
+
+
+class DailyImportUsage(models.Model):
+    business = models.ForeignKey(Business, on_delete=models.CASCADE, related_name="daily_import_usage")
+    day = models.DateField(default=timezone.localdate)
+    attempts = models.PositiveSmallIntegerField(default=0)
+
+    class Meta:
+        constraints = [models.UniqueConstraint(fields=("business", "day"), name="unique_daily_import_usage")]

@@ -1,14 +1,24 @@
+import io
 import tempfile
 from django.contrib.auth import get_user_model
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
 from django.urls import reverse
+from pypdf import PdfWriter
 from app.businesses.models import Business
 from app.catalog.models import Category, Product
 from .models import MenuImport
 from .services import MenuImportError, normalize_draft
 
 User = get_user_model()
+
+
+def valid_pdf_upload(name="carta.pdf"):
+    output = io.BytesIO()
+    writer = PdfWriter()
+    writer.add_blank_page(width=72, height=72)
+    writer.write(output)
+    return SimpleUploadedFile(name, output.getvalue(), content_type="application/pdf")
 
 class MenuImportTests(TestCase):
     def setUp(self):
@@ -27,12 +37,20 @@ class MenuImportTests(TestCase):
         self.assertEqual(draft["categories"][0]["products"], [{"name": "Limonada", "description": "Vaso", "price": "8.00"}])
 
     def test_upload_without_api_key_fails_safely(self):
-        source = SimpleUploadedFile("carta.pdf", b"%PDF-1.4\nmock", content_type="application/pdf")
+        source = valid_pdf_upload()
         response = self.client.post(reverse("menu_imports:upload"), {"source_file": source})
         self.assertEqual(response.status_code, 200)
         job = MenuImport.objects.get()
         self.assertEqual(job.status, MenuImport.Status.FAILED)
         self.assertIn("GEMINI_API_KEY", job.error_message)
+
+    def test_import_analysis_is_limited_to_two_attempts_per_day(self):
+        for _ in range(2):
+            response = self.client.post(reverse("menu_imports:upload"), {"source_file": valid_pdf_upload()})
+            self.assertEqual(response.status_code, 200)
+        response = self.client.post(reverse("menu_imports:upload"), {"source_file": valid_pdf_upload()})
+        self.assertContains(response, "2 análisis")
+        self.assertEqual(MenuImport.objects.count(), 2)
 
     def test_review_confirmation_creates_products_only_once(self):
         job = MenuImport.objects.create(

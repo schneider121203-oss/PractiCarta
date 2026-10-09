@@ -1,6 +1,7 @@
 import json
 import re
 from decimal import Decimal, InvalidOperation
+from django.middleware.csrf import get_token
 from django.http import HttpResponseBadRequest, JsonResponse
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404, render
@@ -71,10 +72,14 @@ def menu(request, slug):
                 "options": [{"id": str(option.id), "name": option.name, "price": str(option.price_delta)} for option in group.options.all()],
             } for group in product.option_groups.all()]}
     AnalyticsEvent.objects.create(business=business, event_type="menu_view", session_id=request.session.session_key or "")
+    business_location = None
+    if business.maps_url:
+        business_location = {"latitude": float(business.latitude), "longitude": float(business.longitude)}
     return render(request, "public/menu.html", {
         "business": business,
         "categories": categories,
         "option_catalog": option_catalog,
+        "menu_config": {"slug": business.slug, "csrf": get_token(request), "businessLocation": business_location},
         "openstreetmap_embed_url": openstreetmap_embed_url(business),
     })
 

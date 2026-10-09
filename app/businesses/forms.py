@@ -4,13 +4,12 @@ from django.utils.text import slugify
 from .models import Business
 from django.forms import inlineformset_factory
 from app.catalog.models import Category, Product, ProductOption, ProductOptionGroup
+from app.core.uploads import validate_image_file
 
 MAX_IMAGE_BYTES = 8 * 1024 * 1024
 
 def validate_image_upload(image):
-    if image and getattr(image, "size", 0) > MAX_IMAGE_BYTES:
-        raise forms.ValidationError("La imagen no puede superar los 8 MB.")
-    return image
+    return validate_image_file(image, MAX_IMAGE_BYTES)
 
 class BusinessForm(forms.ModelForm):
     PALETTE_COLORS = {

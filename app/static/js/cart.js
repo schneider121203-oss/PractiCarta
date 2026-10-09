@@ -1,10 +1,11 @@
 (() => {
-  const storageKey = `practicarta:${window.CARTA.slug}`;
+  const carta = JSON.parse(document.querySelector('#menu-config').textContent || '{}');
+  const storageKey = `practicarta:${carta.slug}`;
   const optionCatalog = JSON.parse(document.querySelector('#product-options').textContent || '{}');
   const $ = selector => document.querySelector(selector);
   const escapeHtml = value => String(value).replace(/[&<>'"]/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
   const money = amount => `S/ ${(Number.isFinite(Number(amount)) ? Number(amount) : 0).toFixed(2)}`;
-  const headers = () => ({'Content-Type':'application/json','X-CSRFToken':window.CARTA.csrf});
+  const headers = () => ({'Content-Type':'application/json','X-CSRFToken':carta.csrf});
   let cart;
   let configuring = null;
   let customerLocation = null;
@@ -45,7 +46,7 @@
     $('#cart-items').innerHTML = cart.map(item => `<div class="cart-item"><span><strong>${escapeHtml(item.name)}</strong>${item.optionNames.length ? `<em>${item.optionNames.map(escapeHtml).join(' · ')}</em>` : ''}<small>${money(item.price)} c/u</small></span><div class="quantity"><button data-change="${item.lineId}" data-delta="-1" aria-label="Quitar uno">−</button><b>${item.quantity}</b><button data-change="${item.lineId}" data-delta="1" aria-label="Añadir uno">+</button></div></div>`).join('') || '<div class="cart-empty"><span>♨</span><p>Tu pedido todavía está vacío.</p></div>';
   }
   function showToast() { const toast=$('#cart-toast'); toast.hidden=false; clearTimeout(showToast.timer); showToast.timer=setTimeout(()=>{toast.hidden=true;},1800); }
-  function recordAdd() { fetch(`/m/${window.CARTA.slug}/event/`,{method:'POST',headers:headers(),body:JSON.stringify({event_type:'add_to_cart'})}).catch(()=>{}); }
+  function recordAdd() { fetch(`/m/${carta.slug}/event/`,{method:'POST',headers:headers(),body:JSON.stringify({event_type:'add_to_cart'})}).catch(()=>{}); }
   function addLine(button, selected=[]) {
     const id=button.dataset.id; const optionIds=selected.map(option=>option.id).sort(); const lineId=`${id}:${optionIds.join(',')}`; const existing=cart.find(item=>item.lineId===lineId);
     const price=Number(button.dataset.price)+selected.reduce((sum,option)=>sum+Number(option.price),0);
@@ -90,7 +91,7 @@
     const hasLocation=Boolean(customerLocation); const mapUrl=hasLocation?`https://www.google.com/maps?q=${customerLocation.latitude.toFixed(6)},${customerLocation.longitude.toFixed(6)}`:'';
     if(locationStatus){locationStatus.textContent=hasLocation?'✓ Ubicación añadida voluntariamente al pedido':'Opcional si escribes una dirección. No la guardaremos.';locationStatus.className=hasLocation?'success':'';}
     if(customerLocationTitle)customerLocationTitle.textContent=hasLocation?'Ubicación lista para compartir':'Compártela solo si quieres';
-    if(customerLocationCopy){const distance=hasLocation&&window.CARTA.businessLocation?distanceInKm(customerLocation,window.CARTA.businessLocation):null;customerLocationCopy.textContent=distance===null?'Puede agilizar el delivery y calcular una distancia aproximada.':`Estás aproximadamente a ${distance<1?`${Math.round(distance*1000)} m`:`${distance.toFixed(1)} km`} del negocio.`;}
+    if(customerLocationCopy){const distance=hasLocation&&carta.businessLocation?distanceInKm(customerLocation,carta.businessLocation):null;customerLocationCopy.textContent=distance===null?'Puede agilizar el delivery y calcular una distancia aproximada.':`Estás aproximadamente a ${distance<1?`${Math.round(distance*1000)} m`:`${distance.toFixed(1)} km`} del negocio.`;}
     if(customerMapLink){customerMapLink.hidden=!hasLocation;if(hasLocation)customerMapLink.href=mapUrl;}
     if(clearLocationButton)clearLocationButton.hidden=!hasLocation;
     [locationButton,findLocationButton].filter(Boolean).forEach(button=>{button.textContent=hasLocation?'✓ Ubicación lista':'⌖ Compartir mi ubicación';});
@@ -111,7 +112,7 @@
     const address=deliveryAddress?.value.trim()||''; const customerNote=note?.value.trim()||'';
     if(orderType==='delivery'&&!address&&!customerLocation){alert('Escribe una dirección o usa tu ubicación actual para el delivery.');deliveryAddress?.focus();return;}
     button.disabled=true;button.querySelector('span').textContent='Preparando pedido…';
-    try{const response=await fetch(`/m/${window.CARTA.slug}/checkout/`,{method:'POST',headers:headers(),body:JSON.stringify({items:cart,order_type:orderType,delivery_address:address,customer_note:customerNote,location:customerLocation})});if(!response.ok)throw new Error('invalid cart');const {phone,text}=await response.json();window.location.href=`https://wa.me/${phone}?text=${encodeURIComponent(text)}`;}catch(_){alert('No pudimos preparar el pedido. Revisa los datos e inténtalo nuevamente.');button.disabled=false;button.querySelector('span').textContent='Continuar por WhatsApp';}
+    try{const response=await fetch(`/m/${carta.slug}/checkout/`,{method:'POST',headers:headers(),body:JSON.stringify({items:cart,order_type:orderType,delivery_address:address,customer_note:customerNote,location:customerLocation})});if(!response.ok)throw new Error('invalid cart');const {phone,text}=await response.json();window.location.href=`https://wa.me/${phone}?text=${encodeURIComponent(text)}`;}catch(_){alert('No pudimos preparar el pedido. Revisa los datos e inténtalo nuevamente.');button.disabled=false;button.querySelector('span').textContent='Continuar por WhatsApp';}
   });
   const search=$('#menu-search');if(search)search.addEventListener('input',()=>{const query=search.value.trim().toLocaleLowerCase('es');let matches=0;document.querySelectorAll('.menu-product').forEach(product=>{const visible=product.dataset.search.includes(query);product.hidden=!visible;if(visible)matches+=1;});document.querySelectorAll('.menu-category').forEach(section=>{section.hidden=!section.querySelector('.menu-product:not([hidden])');});$('#no-results').hidden=matches>0;});
   save();
