@@ -5,7 +5,6 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><meta name="theme-color" content="{% if business.menu_theme == 'dark' %}#090d1a{% else %}{{ business.primary_color }}{% endif %}">
   <title>{{ business.name }} · Carta digital</title>
   <link rel="stylesheet" href="{% static 'css/app.css' %}?v=20261008-home">
-  {% if business.maps_url %}<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">{% endif %}
 </head>
 <body class="menu-page" style="--brand:{{ business.primary_color }};--brand-dark:{{ business.brand_dark_color }};--brand-soft:{{ business.brand_soft_color }};--brand-contrast:{{ business.brand_contrast_color }};--accent:{{ business.secondary_color }};--accent-contrast:{{ business.secondary_contrast_color }}">
   <header class="menu-hero {% if not business.cover_image %}no-cover{% endif %}">
@@ -45,12 +44,10 @@
         <article class="location-card business-location-card"><span class="location-card-icon" aria-hidden="true">⌂</span><div><small>EL NEGOCIO</small><strong>{{ business.address|default:"Ubicación exacta del negocio" }}</strong>{% if business.maps_url %}<a href="{{ business.maps_url }}" target="_blank" rel="noopener noreferrer">Abrir en Google Maps ↗</a>{% endif %}</div></article>
         <article class="location-card customer-location-card"><span class="location-card-icon" aria-hidden="true">◎</span><div><small>TU UBICACIÓN</small><strong id="customer-location-title">Compártela solo si quieres</strong><p id="customer-location-copy">Puede agilizar el delivery y calcular una distancia aproximada.</p><div class="customer-location-actions"><button id="find-my-location" type="button" class="button secondary compact">Usar mi ubicación</button><a id="customer-map-link" class="button ghost compact" href="#" target="_blank" rel="noopener noreferrer" hidden>Ver en Maps ↗</a><button id="clear-my-location" type="button" class="link" hidden>Quitar ubicación</button></div></div></article>
       </div>
-      {% if business.maps_url %}
+      {% if openstreetmap_embed_url %}
       <div class="business-map-wrap">
         <div class="business-map-copy"><span aria-hidden="true">⌖</span><div><small>MAPA DEL LOCAL</small><strong>Cómo llegar a {{ business.name }}</strong></div><a href="{{ business.maps_url }}" target="_blank" rel="noopener noreferrer">Abrir en Maps ↗</a></div>
-        <div class="business-map" id="business-map" data-latitude="{{ business.latitude|unlocalize }}" data-longitude="{{ business.longitude|unlocalize }}" aria-label="Mapa de {{ business.name }}">
-          <span class="map-attribution">© <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">colaboradores de OpenStreetMap</a></span>
-        </div>
+        <iframe class="business-map" title="Mapa de {{ business.name }}" width="600" height="300" loading="lazy" src="{{ openstreetmap_embed_url }}"></iframe>
       </div>
       {% endif %}
       <p class="location-privacy">🔒 Tu ubicación no se guarda. Solo se añade al mensaje de WhatsApp si decides compartirla.</p>
@@ -72,6 +69,6 @@
   <div id="cart-toast" class="cart-toast" hidden>Producto añadido a tu pedido</div>
   <div id="options-overlay" class="cart-overlay" hidden></div><aside id="options-panel" class="cart options-panel" hidden><div class="cart-handle"></div><div class="cart-header"><div><small>PERSONALIZA</small><h2 id="options-product-name">Producto</h2></div><button id="close-options" class="icon-button" aria-label="Cerrar">×</button></div><form id="options-form"><div id="options-groups"></div><div class="options-footer"><span>Total por unidad <strong id="configured-price">S/ 0.00</strong></span><button type="submit">Añadir al pedido</button></div></form></aside>
   {{ option_catalog|json_script:"product-options" }}
-  <script>window.CARTA={slug:"{{ business.slug }}",csrf:"{{ csrf_token }}",businessLocation:{% if business.maps_url %}{latitude:{{ business.latitude|unlocalize }},longitude:{{ business.longitude|unlocalize }}}{% else %}null{% endif %}}</script><script src="{% static 'js/cart.js' %}?v=20261008-location"></script>{% if business.maps_url %}<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="{% static 'js/business-map.js' %}?v=20261009"></script>{% endif %}
+  <script>window.CARTA={slug:"{{ business.slug }}",csrf:"{{ csrf_token }}",businessLocation:{% if business.maps_url %}{latitude:{{ business.latitude|unlocalize }},longitude:{{ business.longitude|unlocalize }}}{% else %}null{% endif %}}</script><script src="{% static 'js/cart.js' %}?v=20261008-location"></script>
 </body>
 </html>
