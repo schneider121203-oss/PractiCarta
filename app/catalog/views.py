@@ -18,7 +18,9 @@ def openstreetmap_embed_url(business):
     if business.latitude is None or business.longitude is None:
         return ""
     latitude, longitude = Decimal(business.latitude), Decimal(business.longitude)
-    lat_padding, lng_padding = Decimal("0.0045"), Decimal("0.0065")
+    # Match the wide mobile card: a close, useful view around the pin instead
+    # of showing an unnecessarily large neighbourhood.
+    lat_padding, lng_padding = Decimal("0.002"), Decimal("0.006")
     south, north = max(Decimal("-90"), latitude - lat_padding), min(Decimal("90"), latitude + lat_padding)
     west, east = max(Decimal("-180"), longitude - lng_padding), min(Decimal("180"), longitude + lng_padding)
     return (
